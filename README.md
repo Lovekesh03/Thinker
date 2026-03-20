@@ -1,50 +1,46 @@
-# Welcome to your Expo app 👋
+# Aura: Minimal Productivity App
+## Walkthrough
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+### Overview
+Aura is a calm, visually appealing, and highly aesthetic personal productivity tool built with **React Native (Expo)**, **Firebase**, and **Zustand**. It combines a to-do list, lightweight notes, and a habit/streak tracking system without the clutter of traditional task managers.
 
-## Get started
+### Features Implemented
+1. **To-Do List & Lightweight Notes**:
+    - Users can add tasks with priorities on the Dashboard.
+    - Tapping a task expands it to reveal an editable notes section for sub-tasks or thoughts.
+    - Tasks are managed via a persistent local `Zustand` store using `AsyncStorage`.
 
-1. Install dependencies
+2. **Focus Mode Timer**:
+    - Clicking the crosshair icon on any task opens a full-screen, distraction-free "Focus Mode".
+    - A customizable Pomodoro-style timer (defaults to 25 minutes) runs with smooth visual ring progress.
+    - Allows the user to immediately mark the task as complete once the session ends.
 
-   ```bash
-   npm install
-   ```
+3. **Habit & Streak Tracking**:
+    - The `HabitsScreen` computes the user's daily completion history.
+    - Displays a GitHub-style Activity Calendar Heatmap reflecting how productive the user was over the past 90 days.
+    - Computes **Current Streak** and **Best Streak**.
 
-2. Start the app
+4. **Reward Gallery**:
+    - A visual gallery showcasing unlocked badges at 10, 30, and 50 days of consecutive streaks.
 
-   ```bash
-   npx expo start
-   ```
+5. **Missed Task Reflection**:
+    - Automatically detects if the user missed tasks from the previous day upon app launch.
+    - Presents a clean reflection modal asking what held them back, encouraging mindfulness and consistency.
 
-In the output, you'll find options to open the app in a
+6. **Smart Notifications**:
+    - `expo-notifications` integration schedules repeating alerts natively every 3 hours when a task is tracked but not completed.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+7. **Dynamic Aesthetic Theme Toggle**:
+    - Users can toggle between `Light Mode`, `Dark Mode`, and `System` settings using the toggle button on the top right of the main Tasks screen.
+    - All screens and components are deeply integrated with a custom `useAppTheme` hook that ensures lightning-fast color palette swaps across the application.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### Technical & Aesthetic Polish
+- **Stack**: React Native Expo Router, Zustand (AsyncStorage persistence), Firebase SDK.
+- **Design System**: Built around Inter fonts (`@expo-google-fonts/inter`), soft muted color palettes (slate, pastel blues), and minimalistic borders.
+- **Micro-Animations**: Uses `react-native-reanimated` (`Animated.createAnimatedComponent`) for buttery-smooth SVG completion rings, checkbox toggles, and UI interactions.
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### Getting Started
+To run on your physical device:
+1. Navigate to the project directory: `cd "F:\git demo\Thinker"`
+2. Start the Expo server: `npm run start` (or `npm run android` / `npm run ios`)
+3. Scan the QR code using the Expo Go app.
