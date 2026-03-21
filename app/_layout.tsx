@@ -4,6 +4,7 @@ import { Stack, SplashScreen } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { LogBox } from 'react-native';
+import { syncNotificationsWithTasks } from '@/lib/notifications';
 
 LogBox.ignoreAllLogs(true);
 import 'react-native-reanimated';
@@ -35,6 +36,16 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [loaded, error]);
+
+  // On app launch, cancel any stale scheduled notifications that no longer
+  // belong to a real incomplete task (e.g. tasks deleted while app was closed)
+  const tasks = useTaskStore(state => state.tasks);
+  useEffect(() => {
+    const incompletedIds = tasks
+      .filter(t => !t.completed)
+      .map(t => t.id);
+    syncNotificationsWithTasks(incompletedIds);
+  }, []);
 
   if (!loaded && !error) {
     return null;

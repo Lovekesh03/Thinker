@@ -47,8 +47,39 @@ export async function scheduleTaskReminder(taskId: string, title: string) {
 }
 
 export async function cancelTaskReminder(taskId: string) {
-  const hasPermission = await requestPermissions();
-  if (hasPermission) {
+  try {
+    // Cancel directly — no permission check needed to cancel a notification
     await Notifications.cancelScheduledNotificationAsync(taskId);
+  } catch {
+    // Silently ignore if there was nothing to cancel
+  }
+}
+
+/** Cancel ALL scheduled notifications — call this to clear stale reminders */
+export async function cancelAllNotifications() {
+  try {
+    await Notifications.cancelAllScheduledNotificationsAsync();
+  } catch {
+    // Silently ignore
+  }
+}
+
+/**
+ * Syncs scheduled notifications with the current list of incomplete task IDs.
+ * Any scheduled notification whose ID is NOT in incompletedTaskIds gets cancelled.
+ */
+export async function syncNotificationsWithTasks(
+  incompletedTaskIds: string[]
+) {
+  try {
+    const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+    const validIds = new Set(incompletedTaskIds);
+    for (const notif of scheduled) {
+      if (!validIds.has(notif.identifier)) {
+        await Notifications.cancelScheduledNotificationAsync(notif.identifier);
+      }
+    }
+  } catch {
+    // Silently ignore
   }
 }
