@@ -63,7 +63,7 @@ export const Colors = {
     icon: '#94A3B8',
     tabIconDefault: '#94A3B8',
     tabIconSelected: shared.primary,
-    heatmapBase: '#1E293B',
+    heatmapBase: '#334155',
     ...shared,
     heatmapLevel1: '#1E3A8A',
     heatmapLevel2: '#2563EB',

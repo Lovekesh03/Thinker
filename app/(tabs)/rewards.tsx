@@ -1,6 +1,6 @@
 import { useAppTheme } from '@/hooks/useAppTheme';
 import React, { useMemo } from 'react';
-import { StyleSheet, View, Text, FlatList } from 'react-native';
+import { StyleSheet, View, Text, FlatList, Share, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Theme } from '@/constants/theme';
 import { useTaskStore } from '@/store/useTaskStore';
@@ -46,6 +46,17 @@ export default function RewardsScreen() {
     return best;
   }, [tasks]);
 
+  const shareBadge = async (badge: typeof BADGES[number]) => {
+    try {
+      await Share.share({
+        message: `🏆 I just earned the "${badge.title}" badge on Thinker!\n\nBuilding strong habits every day. Join me! 💪\n#Thinker #Productivity #HabitTracking`,
+        title: `${badge.title} — Thinker`,
+      });
+    } catch (e) {
+      Alert.alert('Share failed', 'Could not open the share sheet.');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <View style={styles.header}>
@@ -71,7 +82,13 @@ export default function RewardsScreen() {
               </View>
               <Text style={styles.badgeTitle}>{item.title}</Text>
               {!isUnlocked && (
-                <Text style={styles.lockedText}>Need {item.days - bestStreak} more</Text>
+                <Text style={styles.lockedText}>Need {item.days - bestStreak} more days</Text>
+              )}
+              {isUnlocked && (
+                <TouchableOpacity style={styles.shareButton} onPress={() => shareBadge(item)}>
+                  <Feather name="share-2" size={14} color={colors.surface} />
+                  <Text style={styles.shareText}>Share</Text>
+                </TouchableOpacity>
               )}
             </View>
           );
@@ -140,5 +157,21 @@ const useStyles = (colors: any) => StyleSheet.create({
     fontSize: Theme.typography.sizes.sm,
     color: colors.textMuted,
     marginTop: Theme.spacing.xs,
-  }
+  },
+  shareButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    paddingHorizontal: Theme.spacing.sm,
+    paddingVertical: 6,
+    borderRadius: Theme.radius.full,
+    marginTop: Theme.spacing.sm,
+    gap: 4,
+  },
+  shareText: {
+    fontFamily: Theme.typography.fontFamily.semiBold,
+    fontSize: Theme.typography.sizes.sm,
+    color: colors.surface,
+  },
+
 });

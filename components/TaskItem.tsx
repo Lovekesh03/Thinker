@@ -12,6 +12,7 @@ export const TaskItem: React.FC<{ task: Task }> = ({ task }) => {
   const styles = useStyles(colors);
 
   const toggleTask = useTaskStore(state => state.toggleTask);
+  const deleteTask = useTaskStore(state => state.deleteTask);
   const updateTaskNotes = useTaskStore(state => state.updateTaskNotes);
   const [expanded, setExpanded] = useState(false);
   const [notes, setNotes] = useState(task.notes || '');
@@ -49,6 +50,9 @@ export const TaskItem: React.FC<{ task: Task }> = ({ task }) => {
         
         <TouchableOpacity style={styles.focusBtn} onPress={openFocusMode}>
           <Feather name="target" size={20} color={colors.primary} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.deleteBtn} onPress={() => deleteTask(task.id)}>
+          <Feather name="trash-2" size={18} color={colors.danger} />
         </TouchableOpacity>
       </View>
 
@@ -120,6 +124,10 @@ const useStyles = (colors: any) => StyleSheet.create({
   },
   focusBtn: {
     padding: Theme.spacing.sm,
+  },
+  deleteBtn: {
+    padding: Theme.spacing.sm,
+    marginLeft: 2,
   },
   notesContainer: {
     marginTop: Theme.spacing.md,
