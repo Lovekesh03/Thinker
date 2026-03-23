@@ -120,3 +120,33 @@ export async function syncNotificationsWithTasks(
     // Silently ignore
   }
 }
+
+export async function schedulePomodoroFinish(taskTitle: string, seconds: number) {
+  const hasPermission = await requestPermissions();
+  if (!hasPermission) return;
+
+  await cancelPomodoroFinish();
+
+  await Notifications.scheduleNotificationAsync({
+    identifier: 'pomodoro-finish',
+    content: {
+      title: "Focus Session Complete!",
+      body: `Great job! You've finished your focus session for: "${taskTitle}"`,
+      sound: true,
+      priority: 'high',
+    },
+    trigger: {
+      type: 'timeInterval',
+      seconds: seconds,
+      repeats: false,
+    } as Notifications.TimeIntervalTriggerInput,
+  });
+}
+
+export async function cancelPomodoroFinish() {
+  try {
+    await Notifications.cancelScheduledNotificationAsync('pomodoro-finish');
+  } catch {
+    // Silently ignore
+  }
+}

@@ -1,6 +1,6 @@
 import { useAppTheme } from '@/hooks/useAppTheme';
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, AppState } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
@@ -8,8 +8,11 @@ import { Theme } from '@/constants/theme';
 import { useTaskStore } from '@/store/useTaskStore';
 import { ProgressRing } from '@/components/ProgressRing';
 import { Button } from '@/components/Button';
+import { schedulePomodoroFinish, cancelPomodoroFinish } from '@/lib/notifications';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const FOCUS_TIME = 25 * 60; // 25 minutes
+const STORAGE_KEY = 'pomodoro_end_time';
 
 export default function FocusScreen() {
   const { colors } = useAppTheme();
@@ -22,6 +25,59 @@ export default function FocusScreen() {
 
   const [timeLeft, setTimeLeft] = useState(FOCUS_TIME);
   const [isActive, setIsActive] = useState(false);
+  const appState = useRef(AppState.currentState);
+
+  // Initialize and handle AppState changes
+  useEffect(() => {
+    const checkPersistedTime = async () => {
+      const storedEndTime = await AsyncStorage.getItem(STORAGE_KEY);
+      if (storedEndTime) {
+        const endTime = parseInt(storedEndTime, 10);
+        const now = Date.now();
+        const diff = Math.floor((endTime - now) / 1000);
+        
+        if (diff > 0) {
+          setTimeLeft(diff);
+          setIsActive(true);
+        } else {
+          // Timer finished while app was closed
+          setTimeLeft(0);
+          setIsActive(false);
+          await AsyncStorage.removeItem(STORAGE_KEY);
+        }
+      }
+    };
+
+    checkPersistedTime();
+
+    const subscription = AppState.addEventListener('change', async (nextAppState) => {
+      if (
+        appState.current.match(/inactive|background/) &&
+        nextAppState === 'active'
+      ) {
+        // App has come to the foreground
+        const storedEndTime = await AsyncStorage.getItem(STORAGE_KEY);
+        if (storedEndTime) {
+          const endTime = parseInt(storedEndTime, 10);
+          const now = Date.now();
+          const diff = Math.floor((endTime - now) / 1000);
+          
+          if (diff > 0) {
+            setTimeLeft(diff);
+          } else {
+            setTimeLeft(0);
+            setIsActive(false);
+            await AsyncStorage.removeItem(STORAGE_KEY);
+          }
+        }
+      }
+      appState.current = nextAppState;
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
@@ -31,7 +87,7 @@ export default function FocusScreen() {
       }, 1000);
     } else if (timeLeft === 0) {
       setIsActive(false);
-      // Timer finished trigger here
+      AsyncStorage.removeItem(STORAGE_KEY);
     }
     return () => clearInterval(interval);
   }, [isActive, timeLeft]);
@@ -45,10 +101,25 @@ export default function FocusScreen() {
     );
   }
 
-  const toggleTimer = () => setIsActive(!isActive);
-  const resetTimer = () => {
+  const toggleTimer = async () => {
+    const nextActive = !isActive;
+    setIsActive(nextActive);
+
+    if (nextActive) {
+      const endTime = Date.now() + timeLeft * 1000;
+      await AsyncStorage.setItem(STORAGE_KEY, endTime.toString());
+      await schedulePomodoroFinish(task.title, timeLeft);
+    } else {
+      await AsyncStorage.removeItem(STORAGE_KEY);
+      await cancelPomodoroFinish();
+    }
+  };
+
+  const resetTimer = async () => {
     setIsActive(false);
     setTimeLeft(FOCUS_TIME);
+    await AsyncStorage.removeItem(STORAGE_KEY);
+    await cancelPomodoroFinish();
   };
 
   const completeTask = () => {
